@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31313.79
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NestSimplifier", "NestSimplifier.csproj", "{11E4ADFA-D16E-4762-9BF7-6D3B3C01BE93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNestSimplifierApp", "..\TestNestSimplifierApp\TestNestSimplifierApp.csproj", "{4F7DFD11-A136-4FCE-B7A2-9614180095A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{11E4ADFA-D16E-4762-9BF7-6D3B3C01BE93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11E4ADFA-D16E-4762-9BF7-6D3B3C01BE93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11E4ADFA-D16E-4762-9BF7-6D3B3C01BE93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11E4ADFA-D16E-4762-9BF7-6D3B3C01BE93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F7DFD11-A136-4FCE-B7A2-9614180095A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F7DFD11-A136-4FCE-B7A2-9614180095A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F7DFD11-A136-4FCE-B7A2-9614180095A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F7DFD11-A136-4FCE-B7A2-9614180095A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {066AB6D4-CC72-4497-9BA9-3ADB01E1784D}
+	EndGlobalSection
+EndGlobal

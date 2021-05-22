@@ -1,0 +1,8 @@
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\netstandard2.0\NestSimplifier.deps.json
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\netstandard2.0\NestSimplifier.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\netstandard2.0\NestSimplifier.pdb
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\netstandard2.0\NestSimplifier.AssemblyInfoInputs.cache
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\netstandard2.0\NestSimplifier.AssemblyInfo.cs
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\netstandard2.0\NestSimplifier.csproj.CoreCompileInputs.cache
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\netstandard2.0\NestSimplifier.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\netstandard2.0\NestSimplifier.pdb

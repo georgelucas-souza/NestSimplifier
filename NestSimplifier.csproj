@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+	  <Description>Simplify CRUD Operations using ElasticSearch NEST Library</Description>
+	  <Authors>George Lucas Oliveira de Souza</Authors>
+	  <Product>NestSimplifier</Product>
+	  <Company>Personal</Company>
+	  <PackageId>Nest.Simplifier.NetLib</PackageId>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NEST" Version="7.12.1" />
+  </ItemGroup>
+
+</Project>

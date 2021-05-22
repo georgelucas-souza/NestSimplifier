@@ -1,0 +1,15 @@
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\NestSimplifier.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\NestSimplifier.pdb
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\Elasticsearch.Net.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\Nest.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\System.Buffers.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\System.Diagnostics.DiagnosticSource.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\System.Memory.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\System.Numerics.Vectors.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\bin\Debug\net461\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.AssemblyInfoInputs.cache
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.AssemblyInfo.cs
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.csproj.CoreCompileInputs.cache
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.csproj.CopyComplete
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.dll
+C:\Users\saogesou\Dev-Projects\Desktop\NestSimplifier\obj\Debug\net461\NestSimplifier.pdb
