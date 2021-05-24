@@ -32,8 +32,11 @@ namespace NestSimplifier
 
         public static T SetPropertyValue<T>(this T obj, string propertyName, object propertyValue)
         {
-            var property = obj.GetType().GetProperty(propertyName);
-            property.SetValue(obj, propertyValue);
+            if (obj.HasProperty(propertyName))
+            {
+                var property = obj.GetType().GetProperty(propertyName);
+                property.SetValue(obj, propertyValue);
+            }            
 
             return obj;
         }
