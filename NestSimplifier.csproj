@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
@@ -8,6 +8,7 @@
 	  <Company>Personal</Company>
 	  <PackageId>Nest.Simplifier.NetLib</PackageId>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <PackageVersion>1.0.4</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

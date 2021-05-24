@@ -40,10 +40,10 @@ namespace NestSimplifier
 
         //Implement Functions
         
-        public bool RemapIndex<T>(string index) where T : class
+        public NestSimplifierResponse RemapIndex<T>(string index) where T : class
         {
             var resp = _client.Map<T>(m => m.Index(index).AutoMap());
-            return resp.IsValid;
+            return new NestSimplifierResponse(resp.IsValid, resp.DebugInformation);
         }
 
         public List<T> FindAll<T>(string index) where T : class
@@ -119,86 +119,59 @@ namespace NestSimplifier
             }
         }
 
-        public bool InsertMany<T>(string index, List<T> insertObjList, out string message) where T : class
+        public NestSimplifierResponse InsertMany<T>(string index, List<T> insertObjList) where T : class
         {
-
-            if (_client != null)
-            {
-                var bulkIndexResponse = _client.Bulk(b => b
+            var resp = _client.Bulk(b => b
                     .Index(index)
                     .IndexMany(insertObjList));
 
-                if (bulkIndexResponse.IsValid && bulkIndexResponse.ApiCall.Success && bulkIndexResponse.DebugInformation.ToLower().Contains("valid nest response"))
-                {
-                    message = "Success";
-                    return true;
-                }
-                else
-                {
-                    message = bulkIndexResponse.DebugInformation;
-                    return false;
-                }
-            }
-            else
-            {
-                message = "Cert File does not exists";
-                return false;
-            }
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
-        public bool UpsertMany<T>(string index, List<T> updateObjList, out string message) where T : class
+        public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList) where T : class
         {
-            var bulkResponse = _client
+            var resp = _client
                     .Bulk(b => b.Index(index).UpdateMany<T>(
                         updateObjList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
 
-            if (bulkResponse.IsValid && bulkResponse.ApiCall.Success && bulkResponse.DebugInformation.ToLower().Contains("valid nest response"))
-            {
-                message = "Success";
-                return true;
-            }
-            else
-            {
-                message = bulkResponse.DebugInformation;
-                return false;
-            }
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
+
         }
 
-        public bool UpdateMany<T>(string index, List<T> updateObjList, out string message) where T : class
+        public NestSimplifierResponse UpdateMany<T>(string index, List<T> updateObjList) where T : class
         {
-
             string[] changedIds = updateObjList
                 .Where(w => GetPropertyValue(w, "ID") != null)
                 .Select(s => (string)GetPropertyValue(s, "ID"))
                 .ToArray();
 
-            if ((changedIds != null) && changedIds.Count() > 1)
-            {
-
-                var bulkResponse = _client
+            var resp = _client
                     .Bulk(b => b.Index(index).UpdateMany<T>(
                         updateObjList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc)));
 
-                if (bulkResponse.IsValid && bulkResponse.ApiCall.Success && bulkResponse.DebugInformation.ToLower().Contains("valid nest response"))
-                {
-                    message = "Success";
-                    return true;
-                }
-                else
-                {
-                    message = bulkResponse.DebugInformation;
-                    return false;
-                }
-            }
-            else
-            {
-                message = "Not Valid object list\nList must have ID as property";
-                return false;
-            }
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
+        public NestSimplifierResponse DeleteWhere<T>(string index, string field, string keyWordContains) where T : class
+        {
+            var resp = _client.DeleteByQuery<T>(s => 
+            s.Index(index)
+            .Query(p => p
+            .MatchPhrase(M => M
+            .Field(field)
+            .Query(keyWordContains))));
+
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
+        }
+
+        public NestSimplifierResponse DeleteById<T>(string index, string id) where T : class
+        {
+            var resp = _client.Delete<T>(id, d => d.Index(index));
+
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
+        }
 
         //Class Funtions
         private ElasticClient CreateNewClient()
@@ -249,7 +222,7 @@ namespace NestSimplifier
             try
             {
                 var val = obj.GetType().GetProperties()
-                .Where(w => w.Name == property)
+                .Where(w => w.Name.ToUpper() == property.ToUpper())
                 .FirstOrDefault()
                 .GetValue(obj);
 
