@@ -11,7 +11,7 @@ namespace NestSimplifier
 {
     public class NestSimplifierContext : IDisposable
     {
-        private ElasticClient _client;
+        public ElasticClient ElastickSearchClient { get; private set; }
 
         private NestConnectionSettings _ConnectionManager;
 
@@ -21,9 +21,9 @@ namespace NestSimplifier
 
             try
             {
-                _client = CreateNewClient();
+                ElastickSearchClient = CreateNewClient();
 
-                var pingClient = _client.Ping();
+                var pingClient = ElastickSearchClient.Ping();
 
                 if (!pingClient.IsValid)
                 {
@@ -38,90 +38,132 @@ namespace NestSimplifier
 
         }
 
-        //Implement Functions
-        
+
         public NestSimplifierResponse RemapIndex<T>(string index) where T : class
         {
-            var resp = _client.Map<T>(m => m.Index(index).AutoMap());
+            var resp = ElastickSearchClient.Map<T>(m => m.Index(index).AutoMap());
             return new NestSimplifierResponse(resp.IsValid, resp.DebugInformation);
         }
 
-        public List<T> FindAll<T>(string index) where T : class
+        public List<T> FindAll<T>(string index, bool forceRetrieveId = false) where T : class
         {
+            List<T> resultList = new List<T>();
 
-            if (_client != null)
+            var searchResult = ElastickSearchClient.Search<T>(s => s
+                .Index(index)
+                .From(0).Size(1000)
+                .Query(q => q.MatchAll())
+                .Scroll("5m"));
+
+            if (searchResult.Total > 0)
             {
+                resultList.AddRange(searchResult.Documents);
 
-                List<T> resultList = new List<T>();
 
-                var searchResult = _client.Search<T>(s => s
-                    .Index(index)
-                    .From(0).Size(1000)
-                    .Query(q => q.MatchAll())
-                    .Scroll("5m"));
+                var results = ElastickSearchClient.Scroll<T>("10m", searchResult.ScrollId);
 
-                if (searchResult.Total > 0)
+                while (results.Documents.Any())
                 {
-                    resultList.AddRange(searchResult.Documents);
-
-                    var results = _client.Scroll<T>("10m", searchResult.ScrollId);
-
-                    while (results.Documents.Any())
+                    if (forceRetrieveId)
                     {
-                        resultList.AddRange(results.Documents);
-                        results = _client.Scroll<T>("10m", searchResult.ScrollId);
+                        resultList.AddRange(results.Hits.Select(s => s.Source.SetPropertyValue("ID", s.Id)));
+
                     }
+                    else
+                    {
+                        resultList.AddRange(results.Hits.Select(s => s.Source));
+                    }
+
+
+
+                    results = ElastickSearchClient.Scroll<T>("10m", searchResult.ScrollId);
                 }
-
-                return resultList;
-
             }
-            else
-            {
-                return null;
-            }
+
+            return resultList;
         }
 
-        public List<T> FindListByIds<T>(string index, string[] idList) where T : class
+        public List<T> FindByListId<T>(string index, string[] idList, bool forceRetrieveId = false) where T : class
         {
-
-            if (_client != null)
+            if ((idList != null) && idList.Count() > 0)
             {
+                var findResponse = ElastickSearchClient.Search<T>(s => s
+                .Index(index)
+                .From(0)
+                .Size(idList.Count())
+                .Query(q => q.Ids(i => i.Values(idList)))
+                );
 
-                if ((idList != null) && idList.Count() > 1)
+                if (findResponse.Total > 0)
                 {
-                    var findResponse = _client.Search<T>(s => s
-                    .Index(index)
-                    .From(0)
-                    .Size(idList.Count())
-                    .Query(q => q.Ids(i => i.Values(idList)))
-                    );
-
-                    if (findResponse.Total > 0)
+                    if (forceRetrieveId)
                     {
-                        var result = findResponse.Documents.ToList();
+                        var result = findResponse.Hits.Select(s => s.Source.SetPropertyValue("ID", s.Id)).ToList();
                         return result;
                     }
                     else
                     {
-                        return new List<T>();
-                    }
-
+                        var result = findResponse.Hits.Select(s => s.Source).ToList();
+                        return result;
+                    }                    
                 }
                 else
                 {
-                    return null;
+                    return new List<T>();
+                }
+
+            }
+            else
+            {
+                return new List<T>();
+            }
+        }
+
+        public List<T> FindWhere<T>(string index, string field, string keyWordContains, bool forceRetrieveId = false) where T : class
+        {
+            var resp = ElastickSearchClient.Search<T>(s =>
+            s.Index(index)
+            .Query(p => p
+            .MatchPhrase(M => M
+            .Field(field)
+            .Query(keyWordContains))));
+
+            if((resp != null) && resp.Hits.Count > 0)
+            {
+                if (forceRetrieveId)
+                {
+                    var objList = resp.Hits.Select(s => s.Source.SetPropertyValue("ID", s.Id)).ToList();
+                    return objList;
+                }
+                else
+                {
+                    var objList = resp.Hits.Select(s => s.Source).ToList();
+                    return objList;
                 }
             }
             else
             {
                 return null;
+            }
+        }
+
+        public T FindById<T>(string index, string id, bool forceRetrieveId = false) where T : class
+        {
+            var resp = ElastickSearchClient.Get<T>(id, d => d.Index(index));
+
+            if (forceRetrieveId)
+            {
+                return resp.Source.SetPropertyValue("ID", resp.Id);
+            }
+            else
+            {
+                return resp.Source;
             }
         }
 
         public NestSimplifierResponse InsertMany<T>(string index, List<T> insertObjList) where T : class
         {
-            var resp = _client.Bulk(b => b
+            var resp = ElastickSearchClient.Bulk(b => b
                     .Index(index)
                     .IndexMany(insertObjList));
 
@@ -130,7 +172,7 @@ namespace NestSimplifier
 
         public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList) where T : class
         {
-            var resp = _client
+            var resp = ElastickSearchClient
                     .Bulk(b => b.Index(index).UpdateMany<T>(
                         updateObjList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
@@ -142,11 +184,11 @@ namespace NestSimplifier
         public NestSimplifierResponse UpdateMany<T>(string index, List<T> updateObjList) where T : class
         {
             string[] changedIds = updateObjList
-                .Where(w => GetPropertyValue(w, "ID") != null)
-                .Select(s => (string)GetPropertyValue(s, "ID"))
+                .Where(w => w.GetPropertyValue("ID") != null)
+                .Select(s => (string)s.GetPropertyValue("ID"))
                 .ToArray();
 
-            var resp = _client
+            var resp = ElastickSearchClient
                     .Bulk(b => b.Index(index).UpdateMany<T>(
                         updateObjList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc)));
@@ -156,7 +198,7 @@ namespace NestSimplifier
 
         public NestSimplifierResponse DeleteWhere<T>(string index, string field, string keyWordContains) where T : class
         {
-            var resp = _client.DeleteByQuery<T>(s => 
+            var resp = ElastickSearchClient.DeleteByQuery<T>(s =>
             s.Index(index)
             .Query(p => p
             .MatchPhrase(M => M
@@ -168,11 +210,12 @@ namespace NestSimplifier
 
         public NestSimplifierResponse DeleteById<T>(string index, string id) where T : class
         {
-            var resp = _client.Delete<T>(id, d => d.Index(index));
+            var resp = ElastickSearchClient.Delete<T>(id, d => d.Index(index));
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
+        
         //Class Funtions
         private ElasticClient CreateNewClient()
         {
@@ -217,22 +260,6 @@ namespace NestSimplifier
             return client;
         }
 
-        private static object GetPropertyValue<T>(T obj, string property) where T : class
-        {
-            try
-            {
-                var val = obj.GetType().GetProperties()
-                .Where(w => w.Name.ToUpper() == property.ToUpper())
-                .FirstOrDefault()
-                .GetValue(obj);
-
-                return val;
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         public void Dispose()
         {
