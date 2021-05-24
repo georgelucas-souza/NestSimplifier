@@ -38,13 +38,25 @@ namespace NestSimplifier
 
         }
 
-
+        /// <summary>
+        /// Refresh Document properties.
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <returns></returns>
         public NestSimplifierResponse RemapIndex<T>(string index) where T : class
         {
             var resp = ElastickSearchClient.Map<T>(m => m.Index(index).AutoMap());
             return new NestSimplifierResponse(resp.IsValid, resp.DebugInformation);
         }
 
+        /// <summary>
+        /// Find all document in Index.
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="forceRetrieveId">Force get HIT id and store in a variable named 'ID', this variable must be declared in your object class as String.</param>
+        /// <returns></returns>
         public List<T> FindAll<T>(string index, bool forceRetrieveId = false) where T : class
         {
             List<T> resultList = new List<T>();
@@ -83,6 +95,14 @@ namespace NestSimplifier
             return resultList;
         }
 
+        /// <summary>
+        /// Find all document in Index that contains specific ID's
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="idList">Array of ID's.</param>
+        /// <param name="forceRetrieveId">Force get HIT id and store in a variable named 'ID', this variable must be declared in your object class as String.</param>
+        /// <returns></returns>
         public List<T> FindByListId<T>(string index, string[] idList, bool forceRetrieveId = false) where T : class
         {
             if ((idList != null) && idList.Count() > 0)
@@ -119,6 +139,15 @@ namespace NestSimplifier
             }
         }
 
+        /// <summary>
+        /// Find All document in Index where some field contains specific keywords
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="field">'Column/Field' name.</param>
+        /// <param name="keyWordContains">Key word.</param>
+        /// <param name="forceRetrieveId">Force get HIT id and store in a variable named 'ID', this variable must be declared in your object class as String.</param>
+        /// <returns></returns>
         public List<T> FindWhere<T>(string index, string field, string keyWordContains, bool forceRetrieveId = false) where T : class
         {
             var resp = ElastickSearchClient.Search<T>(s =>
@@ -146,7 +175,14 @@ namespace NestSimplifier
                 return null;
             }
         }
-
+        /// <summary>
+        /// Find document with specific ID
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="id">Document ID</param>
+        /// <param name="forceRetrieveId">Force get HIT id and store in a variable named 'ID', this variable must be declared in your object class as String.</param>
+        /// <returns></returns>
         public T FindById<T>(string index, string id, bool forceRetrieveId = false) where T : class
         {
             var resp = ElastickSearchClient.Get<T>(id, d => d.Index(index));
@@ -160,7 +196,13 @@ namespace NestSimplifier
                 return resp.Source;
             }
         }
-
+        /// <summary>
+        /// Insert a list of object class.
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="insertObjList">Object Class list.</param>
+        /// <returns></returns>
         public NestSimplifierResponse InsertMany<T>(string index, List<T> insertObjList) where T : class
         {
             var resp = ElastickSearchClient.Bulk(b => b
@@ -169,7 +211,13 @@ namespace NestSimplifier
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
-
+        /// <summary>
+        /// Update OR Insert in a Document a list of object class. Assuming ID is known
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="updateObjList">Object Class list.</param>
+        /// <returns></returns>
         public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList) where T : class
         {
             var resp = ElastickSearchClient
@@ -180,7 +228,13 @@ namespace NestSimplifier
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
 
         }
-
+        /// <summary>
+        /// Update a Document with a list of object class. Assuming ID is known
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="updateObjList">Object Class list.</param>
+        /// <returns></returns>
         public NestSimplifierResponse UpdateMany<T>(string index, List<T> updateObjList) where T : class
         {
             string[] changedIds = updateObjList
@@ -195,7 +249,14 @@ namespace NestSimplifier
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
-
+        /// <summary>
+        /// Delete all documents whre field contains value
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="field">'Column/Field' name</param>
+        /// <param name="keyWordContains">Keyword.</param>
+        /// <returns></returns>
         public NestSimplifierResponse DeleteWhere<T>(string index, string field, string keyWordContains) where T : class
         {
             var resp = ElastickSearchClient.DeleteByQuery<T>(s =>
@@ -208,6 +269,13 @@ namespace NestSimplifier
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
+        /// <summary>
+        /// Delete document with specific ID
+        /// </summary>
+        /// <typeparam name="T">Object Class.</typeparam>
+        /// <param name="index">Document Index.</param>
+        /// <param name="id">Document ID.</param>
+        /// <returns></returns>
         public NestSimplifierResponse DeleteById<T>(string index, string id) where T : class
         {
             var resp = ElastickSearchClient.Delete<T>(id, d => d.Index(index));
