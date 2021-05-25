@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+	  <Title>NestSimplifier - Easy way to do basic CRUD operations with NEST library</Title>
 	  <Description>Simplify CRUD Operations using ElasticSearch NEST Library</Description>
 	  <Authors>George Lucas Oliveira de Souza</Authors>
 	  <Product>NestSimplifier</Product>
@@ -9,6 +10,9 @@
 	  <PackageId>Nest.Simplifier.NetLib</PackageId>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageVersion>1.1.0</PackageVersion>
+	  <PackageTags>elasticsearch;elastic;elk;nest;simplifier</PackageTags>
+	  <RepositoryUrl>https://github.com/georgelucas-souza/NestSimplifier</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
