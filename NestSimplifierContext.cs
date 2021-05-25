@@ -229,40 +229,53 @@ namespace NestSimplifier
         /// <param name="index">Document Index.</param>
         /// <param name="updateObjList">Object Class list.</param>
         /// <returns></returns>
-        public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList) where T : class
+        public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList, bool forceNullIdToInsert = false) where T : class
         {
-            NestSimplifierResponse insertResponse = new NestSimplifierResponse(true, string.Empty);
-            NestSimplifierResponse UpsertResponse = null;
-
-
-            List<T> insertList = new List<T>();
-            List<T> upsertList = new List<T>();
-
-            foreach (var item in updateObjList)
+            if (forceNullIdToInsert)
             {
-                if (item.PropertyNotExistsOrIsNullOrEmpty("ID", true))
-                {
-                    insertList.Add(item);
-                }
-                else
-                {
-                    upsertList.Add(item);
-                }
-            }
+                NestSimplifierResponse insertResponse = new NestSimplifierResponse(true, string.Empty);
+                NestSimplifierResponse UpsertResponse = null;
 
-            if((insertList != null) && insertList.Count > 0)
+
+                List<T> insertList = new List<T>();
+                List<T> upsertList = new List<T>();
+
+                foreach (var item in updateObjList)
+                {
+                    if (item.PropertyNotExistsOrIsNullOrEmpty("ID", true))
+                    {
+                        insertList.Add(item);
+                    }
+                    else
+                    {
+                        upsertList.Add(item);
+                    }
+                }
+
+                if ((insertList != null) && insertList.Count > 0)
+                {
+                    insertResponse = InsertMany<T>(index, insertList);
+                }
+
+                var respUpsert = ElastickSearchClient
+                        .Bulk(b => b.Index(index).UpdateMany<T>(
+                            upsertList,
+                            (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
+
+                UpsertResponse = new NestSimplifierResponse((respUpsert.IsValid && respUpsert.ApiCall.Success), respUpsert.DebugInformation);
+
+                return new NestSimplifierResponse((UpsertResponse.IsValid && insertResponse.IsValid), (!string.IsNullOrEmpty(insertResponse.Message) ? "INSERT: " + insertResponse.Message + Environment.NewLine + "UPSERT: " + UpsertResponse.Message : respUpsert.DebugInformation));
+            }
+            else
             {
-                insertResponse = InsertMany<T>(index, insertList);
+                var respUpsert = ElastickSearchClient
+                        .Bulk(b => b.Index(index).UpdateMany<T>(
+                            updateObjList,
+                            (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
+
+                return new NestSimplifierResponse((respUpsert.IsValid && respUpsert.ApiCall.Success), respUpsert.DebugInformation);
             }
-
-            var respUpsert = ElastickSearchClient
-                    .Bulk(b => b.Index(index).UpdateMany<T>(
-                        upsertList,
-                        (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
-
-            UpsertResponse = new NestSimplifierResponse((respUpsert.IsValid && respUpsert.ApiCall.Success), respUpsert.DebugInformation);
-
-            return new NestSimplifierResponse((UpsertResponse.IsValid && insertResponse.IsValid), (!string.IsNullOrEmpty(insertResponse.Message) ? "INSERT: " + insertResponse.Message + Environment.NewLine + "UPSERT: " + UpsertResponse.Message : respUpsert.DebugInformation));
+            
 
         }
 
