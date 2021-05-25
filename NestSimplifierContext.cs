@@ -50,6 +50,7 @@ namespace NestSimplifier
             return new NestSimplifierResponse(resp.IsValid, resp.DebugInformation);
         }
 
+
         /// <summary>
         /// Find all document in Index.
         /// </summary>
@@ -95,6 +96,8 @@ namespace NestSimplifier
             return resultList;
         }
 
+
+
         /// <summary>
         /// Find all document in Index that contains specific ID's
         /// </summary>
@@ -125,7 +128,7 @@ namespace NestSimplifier
                     {
                         var result = findResponse.Hits.Select(s => s.Source).ToList();
                         return result;
-                    }                    
+                    }
                 }
                 else
                 {
@@ -138,6 +141,8 @@ namespace NestSimplifier
                 return new List<T>();
             }
         }
+
+
 
         /// <summary>
         /// Find All document in Index where some field contains specific keywords
@@ -157,7 +162,7 @@ namespace NestSimplifier
             .Field(field)
             .Query(keyWordContains))));
 
-            if((resp != null) && resp.Hits.Count > 0)
+            if ((resp != null) && resp.Hits.Count > 0)
             {
                 if (forceRetrieveId)
                 {
@@ -175,6 +180,8 @@ namespace NestSimplifier
                 return null;
             }
         }
+
+
         /// <summary>
         /// Find document with specific ID
         /// </summary>
@@ -196,6 +203,8 @@ namespace NestSimplifier
                 return resp.Source;
             }
         }
+
+
         /// <summary>
         /// Insert a list of object class.
         /// </summary>
@@ -211,8 +220,10 @@ namespace NestSimplifier
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
+
+
         /// <summary>
-        /// Update OR Insert in a Document a list of object class. Assuming ID is known
+        /// Update OR Insert a Document a list of object class. Assuming ID is known
         /// </summary>
         /// <typeparam name="T">Object Class.</typeparam>
         /// <param name="index">Document Index.</param>
@@ -220,14 +231,42 @@ namespace NestSimplifier
         /// <returns></returns>
         public NestSimplifierResponse UpsertMany<T>(string index, List<T> updateObjList) where T : class
         {
-            var resp = ElastickSearchClient
+            NestSimplifierResponse insertResponse = new NestSimplifierResponse(true, string.Empty);
+            NestSimplifierResponse UpsertResponse = null;
+
+
+            List<T> insertList = new List<T>();
+            List<T> upsertList = new List<T>();
+
+            foreach (var item in updateObjList)
+            {
+                if (item.PropertyNotExistsOrIsNullOrEmpty("ID", true))
+                {
+                    insertList.Add(item);
+                }
+                else
+                {
+                    upsertList.Add(item);
+                }
+            }
+
+            if((insertList != null) && insertList.Count > 0)
+            {
+                insertResponse = InsertMany<T>(index, insertList);
+            }
+
+            var respUpsert = ElastickSearchClient
                     .Bulk(b => b.Index(index).UpdateMany<T>(
-                        updateObjList,
+                        upsertList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
 
-            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
+            UpsertResponse = new NestSimplifierResponse((respUpsert.IsValid && respUpsert.ApiCall.Success), respUpsert.DebugInformation);
+
+            return new NestSimplifierResponse((UpsertResponse.IsValid && insertResponse.IsValid), (!string.IsNullOrEmpty(insertResponse.Message) ? "INSERT: " + insertResponse.Message + Environment.NewLine + "UPSERT: " + UpsertResponse.Message : respUpsert.DebugInformation));
 
         }
+
+
         /// <summary>
         /// Update a Document with a list of object class. Assuming ID is known
         /// </summary>
@@ -249,6 +288,8 @@ namespace NestSimplifier
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
+
+
         /// <summary>
         /// Delete all documents whre field contains value
         /// </summary>
@@ -269,6 +310,8 @@ namespace NestSimplifier
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
+
+
         /// <summary>
         /// Delete document with specific ID
         /// </summary>
@@ -283,7 +326,7 @@ namespace NestSimplifier
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }
 
-        
+
         //Class Funtions
         private ElasticClient CreateNewClient()
         {
