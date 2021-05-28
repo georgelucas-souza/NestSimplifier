@@ -11,7 +11,7 @@ namespace NestSimplifier
 {
     public class NestSimplifierContext : IDisposable
     {
-        public ElasticClient ElastickSearchClient { get; private set; }
+        public ElasticClient ElasticSearchClient { get; private set; }
 
         private NestConnectionSettings _ConnectionManager;
 
@@ -21,9 +21,9 @@ namespace NestSimplifier
 
             try
             {
-                ElastickSearchClient = CreateNewClient();
+                ElasticSearchClient = CreateNewClient();
 
-                var pingClient = ElastickSearchClient.Ping();
+                var pingClient = ElasticSearchClient.Ping();
 
                 if (!pingClient.IsValid)
                 {
@@ -46,7 +46,7 @@ namespace NestSimplifier
         /// <returns></returns>
         public NestSimplifierResponse RemapIndex<T>(string index) where T : class
         {
-            var resp = ElastickSearchClient.Map<T>(m => m.Index(index).AutoMap());
+            var resp = ElasticSearchClient.Map<T>(m => m.Index(index).AutoMap());
             return new NestSimplifierResponse(resp.IsValid, resp.DebugInformation);
         }
 
@@ -62,7 +62,7 @@ namespace NestSimplifier
         {
             List<T> resultList = new List<T>();
 
-            var searchResult = ElastickSearchClient.Search<T>(s => s
+            var searchResult = ElasticSearchClient.Search<T>(s => s
                 .Index(index)
                 .From(0).Size(1000)
                 .Query(q => q.MatchAll())
@@ -73,7 +73,7 @@ namespace NestSimplifier
                 resultList.AddRange(searchResult.Documents);
 
 
-                var results = ElastickSearchClient.Scroll<T>("10m", searchResult.ScrollId);
+                var results = ElasticSearchClient.Scroll<T>("10m", searchResult.ScrollId);
 
                 while (results.Documents.Any())
                 {
@@ -89,7 +89,7 @@ namespace NestSimplifier
 
 
 
-                    results = ElastickSearchClient.Scroll<T>("10m", searchResult.ScrollId);
+                    results = ElasticSearchClient.Scroll<T>("10m", searchResult.ScrollId);
                 }
             }
 
@@ -110,7 +110,7 @@ namespace NestSimplifier
         {
             if ((idList != null) && idList.Count() > 0)
             {
-                var findResponse = ElastickSearchClient.Search<T>(s => s
+                var findResponse = ElasticSearchClient.Search<T>(s => s
                 .Index(index)
                 .From(0)
                 .Size(idList.Count())
@@ -155,7 +155,7 @@ namespace NestSimplifier
         /// <returns></returns>
         public List<T> FindWhere<T>(string index, string field, string keyWordContains, bool forceRetrieveId = false) where T : class
         {
-            var resp = ElastickSearchClient.Search<T>(s =>
+            var resp = ElasticSearchClient.Search<T>(s =>
             s.Index(index)
             .Query(p => p
             .MatchPhrase(M => M
@@ -192,7 +192,7 @@ namespace NestSimplifier
         /// <returns></returns>
         public T FindById<T>(string index, string id, bool forceRetrieveId = false) where T : class
         {
-            var resp = ElastickSearchClient.Get<T>(id, d => d.Index(index));
+            var resp = ElasticSearchClient.Get<T>(id, d => d.Index(index));
 
             if (forceRetrieveId)
             {
@@ -214,7 +214,7 @@ namespace NestSimplifier
         /// <returns></returns>
         public NestSimplifierResponse InsertMany<T>(string index, List<T> insertObjList) where T : class
         {
-            var resp = ElastickSearchClient.Bulk(b => b
+            var resp = ElasticSearchClient.Bulk(b => b
                     .Index(index)
                     .IndexMany(insertObjList));
 
@@ -257,7 +257,7 @@ namespace NestSimplifier
                     insertResponse = InsertMany<T>(index, insertList);
                 }
 
-                var respUpsert = ElastickSearchClient
+                var respUpsert = ElasticSearchClient
                         .Bulk(b => b.Index(index).UpdateMany<T>(
                             upsertList,
                             (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
@@ -268,7 +268,7 @@ namespace NestSimplifier
             }
             else
             {
-                var respUpsert = ElastickSearchClient
+                var respUpsert = ElasticSearchClient
                         .Bulk(b => b.Index(index).UpdateMany<T>(
                             updateObjList,
                             (bulkDescriptor, doc) => bulkDescriptor.Doc(doc).Upsert(doc)));
@@ -294,7 +294,7 @@ namespace NestSimplifier
                 .Select(s => (string)s.GetPropertyValue("ID"))
                 .ToArray();
 
-            var resp = ElastickSearchClient
+            var resp = ElasticSearchClient
                     .Bulk(b => b.Index(index).UpdateMany<T>(
                         updateObjList,
                         (bulkDescriptor, doc) => bulkDescriptor.Doc(doc)));
@@ -313,7 +313,7 @@ namespace NestSimplifier
         /// <returns></returns>
         public NestSimplifierResponse DeleteWhere<T>(string index, string field, string keyWordContains) where T : class
         {
-            var resp = ElastickSearchClient.DeleteByQuery<T>(s =>
+            var resp = ElasticSearchClient.DeleteByQuery<T>(s =>
             s.Index(index)
             .Query(p => p
             .MatchPhrase(M => M
@@ -334,7 +334,14 @@ namespace NestSimplifier
         /// <returns></returns>
         public NestSimplifierResponse DeleteById<T>(string index, string id) where T : class
         {
-            var resp = ElastickSearchClient.Delete<T>(id, d => d.Index(index));
+            var resp = ElasticSearchClient.Delete<T>(id, d => d.Index(index));
+
+            return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
+        }
+
+        public NestSimplifierResponse DeleteMany<T>(string index, List<T> deleteItemList) where T : class
+        {
+            var resp = ElasticSearchClient.Bulk(b => b.Index(index).DeleteMany<T>(deleteItemList));
 
             return new NestSimplifierResponse((resp.IsValid && resp.ApiCall.Success), resp.DebugInformation);
         }

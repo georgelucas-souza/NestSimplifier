@@ -9,7 +9,7 @@
 	  <Company>Personal</Company>
 	  <PackageId>Nest.Simplifier.NetLib</PackageId>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <PackageVersion>1.1.2</PackageVersion>
+	  <PackageVersion>1.1.3</PackageVersion>
 	  <PackageTags>elasticsearch;elastic;elk;nest;simplifier</PackageTags>
 	  <RepositoryUrl>https://github.com/georgelucas-souza/NestSimplifier</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
